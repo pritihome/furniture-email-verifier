@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Furniture Buyer Email Filter & Domain Verifier</title>
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Library CDNs for parsing and exporting XLSX/CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="logo-group">
+      <div class="logo-icon">FB</div>
+      <div class="logo-text">
+        <h1>Furniture Buyer Verifier</h1>
+        <p>International Email Filter & Domain Scraper v1.2</p>
+      </div>
+    </div>
+    
+    <!-- Tab Controls -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-dashboard">
+        <span>📊</span> Dashboard
+      </button>
+      <button class="tab-btn" data-tab="tab-scanner">
+        <span>⚡</span> Filter & Scan
+      </button>
+      <button class="tab-btn" data-tab="tab-database">
+        <span>📂</span> Results Grid
+      </button>
+      <button class="tab-btn" data-tab="tab-settings">
+        <span>⚙️</span> Settings
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Viewport -->
+  <main class="main-viewport">
+    
+    <!-- 1. DASHBOARD TAB PANEL -->
+    <section class="tab-panel active" id="tab-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card stat-neutral">
+          <div class="stat-title">Total Uploaded</div>
+          <div class="stat-number" id="dash-total">0</div>
+          <div class="stat-desc">Unique email addresses</div>
+        </div>
+        <div class="stat-card stat-valid">
+          <div class="stat-title">High Quality</div>
+          <div class="stat-number text-success" id="dash-high">0</div>
+          <div class="stat-desc">Cleaned furniture buyers</div>
+        </div>
+        <div class="stat-card stat-info">
+          <div class="stat-title">Medium Quality</div>
+          <div class="stat-number text-info" id="dash-medium">0</div>
+          <div class="stat-desc">Related companies</div>
+        </div>
+        <div class="stat-card stat-warning">
+          <div class="stat-title">Manual Review</div>
+          <div class="stat-number text-warning" id="dash-review">0</div>
+          <div class="stat-desc">Unsure / verify website</div>
+        </div>
+        <div class="stat-card stat-danger">
+          <div class="stat-title">Rejected Total</div>
+          <div class="stat-number text-danger" id="dash-rejected">0</div>
+          <div class="stat-desc">All filter invalidations</div>
+        </div>
+      </div>
+      
+      <div class="analytics-row">
+        <!-- Donut Chart & Breakdowns -->
+        <div class="glass-panel chart-panel-container">
+          <div class="chart-header">
+            <h3>Quality Breakdown</h3>
+            <span class="status-indicator-dot online" style="background:var(--primary); box-shadow:0 0 8px var(--primary)"></span>
+          </div>
+          
+          <div class="donut-chart-box">
+            <svg width="220" height="220" viewBox="0 0 220 220" id="dash-donut-chart">
+              <circle cx="110" cy="110" r="90" fill="transparent" stroke="rgba(255,255,255,0.03)" stroke-width="20"></circle>
+              <!-- High segment -->
+              <circle id="donut-ring-high" class="svg-donut-ring" cx="110" cy="110" r="90" fill="transparent" stroke="var(--success)" stroke-width="20" stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+              <!-- Medium segment -->
+              <circle id="donut-ring-medium" class="svg-donut-ring" cx="110" cy="110" r="90" fill="transparent" stroke="var(--info)" stroke-width="20" stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+              <!-- Review segment -->
+              <circle id="donut-ring-review" class="svg-donut-ring" cx="110" cy="110" r="90" fill="transparent" stroke="var(--warning)" stroke-width="20" stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+              <!-- Reject segment -->
+              <circle id="donut-ring-reject" class="svg-donut-ring" cx="110" cy="110" r="90" fill="transparent" stroke="var(--danger)" stroke-width="20" stroke-dasharray="565.48" stroke-dashoffset="565.48"></circle>
+              
+              <text x="110" y="105" class="svg-donut-center-text" id="donut-center-total">0</text>
+              <text x="110" y="125" class="svg-donut-label">EMAILS</text>
+            </svg>
+          </div>
+          
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:1rem; text-align:center; font-size:0.8rem; border-top:1px solid rgba(255,255,255,0.05); padding-top:1rem;">
+            <div>
+              <span class="badge badge-high" style="margin-bottom:0.25rem;">High Quality</span>
+              <div id="dash-high-pct" style="font-weight:700;">0%</div>
+            </div>
+            <div>
+              <span class="badge badge-review" style="margin-bottom:0.25rem;">Medium Quality</span>
+              <div id="dash-medium-pct" style="font-weight:700;">0%</div>
+            </div>
+            <div>
+              <span class="badge badge-warning" style="margin-bottom:0.25rem; background:rgba(245,158,11,0.15); color:var(--warning); border:1px solid rgba(245,158,11,0.2);">Manual Review</span>
+              <div id="dash-review-pct" style="font-weight:700;">0%</div>
+            </div>
+            <div>
+              <span class="badge badge-reject" style="margin-bottom:0.25rem;">Rejected</span>
+              <div id="dash-reject-pct" style="font-weight:700;">0%</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reject Reason Distribution Panel -->
+        <div class="glass-panel" style="display:flex; flex-direction:column; gap:1.25rem;">
+          <h3 style="font-size:1rem; font-weight:700;">Strict Rejection Invalidation Rules</h3>
+          
+          <div style="display:flex; flex-direction:column; gap:0.75rem; flex:1; justify-content:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-muted);">🇮🇳 Indian Origin / Competitors:</span>
+              <span class="font-mono text-danger" style="font-weight:bold;" id="dash-rej-indian">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-muted);">📧 Personal Providers:</span>
+              <span class="font-mono text-warning" style="font-weight:bold;" id="dash-rej-personal">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-muted);">🏷️ Ineligible Domain Extension (.org/.gov/etc):</span>
+              <span class="font-mono text-danger" style="font-weight:bold;" id="dash-rej-tld">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-muted);">🔒 Inactive Website / CORS Blocked:</span>
+              <span class="font-mono text-info" style="font-weight:bold;" id="dash-rej-web">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-muted);">🚫 Missing MX / Invalid Mail Server:</span>
+              <span class="font-mono text-danger" style="font-weight:bold;" id="dash-rej-mx">0</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+              <span style="color:var(--text-muted);">👔 Irrelevant Sector / Industry:</span>
+              <span class="font-mono text-muted" style="font-weight:bold;" id="dash-rej-sector">0</span>
+            </div>
+          </div>
+          
+          <div style="font-size:0.7rem; color:var(--text-dim); text-align:center; border-top:1px solid rgba(255,255,255,0.05); padding-top:0.75rem;">
+            * Reductions of -100 are automatically mapped as Reject decisions.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. FILTER & SCAN TAB PANEL -->
+    <section class="tab-panel" id="tab-scanner">
+      <!-- Upload Zone -->
+      <div class="glass-panel" id="upload-panel">
+        <div class="upload-container" id="drop-zone">
+          <div class="upload-icon">📥</div>
+          <div class="upload-title">Drop your Email CSV or Excel list here</div>
+          <div class="upload-desc">Supports uploading .csv, .xlsx, or .xls format files containing fields like Email, Name, Company, Website, Country, Phone, Notes.</div>
+          <button class="btn btn-primary" id="btn-select-file">
+            📁 Select Local File
+          </button>
+          <input type="file" id="file-input" style="display:none;" accept=".csv,.xlsx,.xls">
+        </div>
+      </div>
+      
+      <!-- Field Mapping Panel (Initially Hidden) -->
+      <div class="glass-panel" id="mapping-panel" style="display:none; margin-top:1.5rem;">
+        <h3 style="font-size:1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+          <span>📋</span> Column Mapping Configuration
+        </h3>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">Match the columns from your uploaded file to the required parameters below. The email field is mandatory.</p>
+        
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;" id="mapping-selects">
+          <!-- Selects will be generated dynamically -->
+        </div>
+        
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+          <button class="btn" id="btn-cancel-mapping">Cancel</button>
+          <button class="btn btn-primary" id="btn-start-process">⚡ Start Processing</button>
+        </div>
+      </div>
+
+      <!-- Processing Status View (Initially Hidden) -->
+      <div class="glass-panel" id="progress-panel" style="display:none; margin-top:1.5rem;">
+        <!-- Controls bar -->
+        <div class="control-bar">
+          <div class="control-group">
+            <span class="status-indicator-dot online" id="status-glow" style="animation:pulse 1s infinite alternate;"></span>
+            <strong id="progress-status-title">Queue Processing initialized...</strong>
+          </div>
+          <div class="control-group">
+            <button class="btn btn-danger" id="btn-stop-scan">⏹️ Stop Scanning</button>
+          </div>
+        </div>
+        
+        <!-- Progress bar -->
+        <div class="progress-panel">
+          <div class="progress-header">
+            <span class="progress-label">Filtering & Verifying Domains</span>
+            <span class="progress-pct" id="progress-percentage">0% (0/0)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-bar"></div>
+          </div>
+        </div>
+        
+        <!-- Simulated Worker Concurrency slots -->
+        <div style="margin-bottom:0.75rem;">
+          <h4 style="font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.5rem;">Active Network Relays:</h4>
+          <div class="workers-grid" id="workers-container">
+            <!-- Simulated worker nodes dynamically placed here -->
+          </div>
+        </div>
+        
+        <!-- Monospace Console Log Body -->
+        <div class="console-wrapper">
+          <div class="console-header">
+            <span>Socket Connections & DNS Logs Console</span>
+            <span class="console-live-dot"></span>
+          </div>
+          <div class="console-body" id="console-logs">
+            <div class="log-row sys">[SYS] Engine initialized and ready to verify domain telemetry.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RESULTS DATABASE TAB PANEL -->
+    <section class="tab-panel" id="tab-database">
+      <div class="glass-panel table-viewport-panel">
+        <div class="table-controls">
+          <!-- Filters on Left -->
+          <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+            <input type="text" class="search-field" id="search-input" placeholder="Search by email, domain, reason...">
+            
+            <select class="select-field" id="filter-decision">
+              <option value="all">All Decisions</option>
+              <option value="keep-high">Keep - High Quality</option>
+              <option value="keep-medium">Keep - Medium Quality</option>
+              <option value="manual">Manual Review</option>
+              <option value="reject">Reject</option>
+            </select>
+            
+            <select class="select-field" id="filter-status">
+              <option value="all">All Web/DNS</option>
+              <option value="mx-pass">MX Active</option>
+              <option value="mx-fail">MX Missing</option>
+              <option value="web-active">Web Active</option>
+              <option value="web-inactive">Web Offline</option>
+            </select>
+          </div>
+          
+          <!-- Exports on Right -->
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn" id="btn-export-high" disabled>
+              <span>🟢</span> Export High
+            </button>
+            <button class="btn" id="btn-export-medium" disabled>
+              <span>🔵</span> Export Medium
+            </button>
+            <button class="btn" id="btn-export-review" disabled>
+              <span>🟡</span> Export Review
+            </button>
+            <button class="btn" id="btn-export-rejected" disabled>
+              <span>🔴</span> Export Rejected
+            </button>
+            <button class="btn btn-primary" id="btn-export-all" disabled>
+              <span>📥</span> Export Audit
+            </button>
+          </div>
+        </div>
+        
+        <!-- Table Spreadsheets -->
+        <div class="spreadsheet-container">
+          <table class="excel-grid" id="results-table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">No.</th>
+                <th>Original Email</th>
+                <th>Final Decision</th>
+                <th>Relevance Score</th>
+                <th>Domain</th>
+                <th>MX Status</th>
+                <th>Web Status</th>
+                <th>Country</th>
+                <th>Business Category</th>
+                <th>Indian Signal</th>
+                <th>Reason</th>
+                <th>Keywords Found</th>
+                <th>Website Checked</th>
+              </tr>
+            </thead>
+            <tbody id="table-tbody">
+              <tr class="table-placeholder-row">
+                <td colspan="13" class="table-placeholder">
+                  <span class="table-placeholder-icon">📊</span>
+                  <strong>Spreadsheet is empty</strong><br>
+                  Upload your database in the "Filter & Scan" tab to verify records.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SYSTEM SETTINGS TAB PANEL -->
+    <section class="tab-panel" id="tab-settings">
+      <div class="glass-panel settings-grid">
+        
+        <!-- Left Side: Basic Filters config -->
+        <div class="settings-card">
+          <h3><span>🛡️</span> Basic Filter Settings</h3>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Reject Personal Emails</span>
+              <span class="option-desc">Discard Gmail, Yahoo, Hotmail, and other personal accounts.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-reject-personal" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Reject .org Domains</span>
+              <span class="option-desc">Mark all emails ending in .org as Reject.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-reject-org" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Reject .gov Domains</span>
+              <span class="option-desc">Mark all educational (.edu) and government (.gov) extensions as Reject.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-reject-gov" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Reject .in Domains (Hard Locked)</span>
+              <span class="option-desc">All Indian email and domain extensions are blocked.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked disabled>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Reject Indian Origin Firms (Hard Locked)</span>
+              <span class="option-desc">Bans websites with Indian addresses, phone codes (+91), or references.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" checked disabled>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+            <label class="input-label" for="set-min-keep-score">
+              Minimum Keep Score: <strong id="set-min-score-val">55</strong>
+              <span>Threshold to label a company as Keep (Medium Quality).</span>
+            </label>
+            <input type="range" id="set-min-keep-score" min="40" max="75" value="55" style="width:100%;">
+          </div>
+        </div>
+        
+        <!-- Middle Side: Business Categories & Concurrency -->
+        <div class="settings-card">
+          <h3><span>👔</span> Target Business Verticals</h3>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Include Home Decor Stores</span>
+              <span class="option-desc">Allow gift, lifestyle, and decor stores to qualify for Medium Quality.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-inc-decor" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Include Interior Designers</span>
+              <span class="option-desc">Classify interior furnishing/design studios as Medium Quality.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-inc-designers" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Include Hotels & Resorts</span>
+              <span class="option-desc">Allow hospitality/resort procurement groups to pass checks.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-inc-hotels" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Include Architecture Firms</span>
+              <span class="option-desc">Allow architecture firms to pass as Keep - Medium Quality.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-inc-architecture" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div style="margin-top:0.5rem; display:flex; flex-direction:column; gap:0.5rem;">
+            <label class="input-label" for="set-concurrency">
+              Parallel Scanning Channels: <strong id="set-concurrency-val">6</strong>
+              <span>Number of domains processed concurrently. Lower is safer.</span>
+            </label>
+            <input type="range" id="set-concurrency" min="2" max="12" value="6" style="width:100%;">
+          </div>
+        </div>
+        
+        <!-- Right Side: API Keys & Proxies -->
+        <div class="settings-card">
+          <h3><span>🔌</span> AI & Scraping Integrations</h3>
+          
+          <div class="toggle-option">
+            <div class="option-info">
+              <span class="option-title">Deep AI Verification</span>
+              <span class="option-desc">Enable Gemini AI content analysis on websites.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-use-gemini">
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:0.25rem;">
+            <label class="input-label">
+              Gemini API Key
+              <span>Stored locally in your browser cache.</span>
+            </label>
+            <input type="password" class="text-input text-input-mono" id="set-gemini-key" placeholder="AIzaSy...">
+          </div>
+          
+          <div class="toggle-option" style="margin-top:0.5rem;">
+            <div class="option-info">
+              <span class="option-title">Search Engine Snippets</span>
+              <span class="option-desc">Query search engines for fallback domain clues.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="set-use-search">
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:0.25rem;">
+            <label class="input-label">
+              SerpAPI API Key
+              <span>Google Custom Search / SerpAPI access token.</span>
+            </label>
+            <input type="password" class="text-input text-input-mono" id="set-search-key" placeholder="API Key...">
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:0.25rem; margin-top:0.5rem;">
+            <label class="input-label">
+              CORS Web Scraping Proxy
+              <span>Required to fetch website data from browser.</span>
+            </label>
+            <input type="text" class="text-input text-input-mono" id="set-cors-proxy" value="https://api.allorigins.win/get?url=">
+          </div>
+        </div>
+        
+      </div>
+      
+      <div style="margin-top:1.5rem; text-align:right;">
+        <button class="btn btn-primary" id="btn-save-settings">💾 Save Configuration Settings</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Load Main Application Logic -->
+  <script src="js/app.js"></script>
+</body>
+</html>
