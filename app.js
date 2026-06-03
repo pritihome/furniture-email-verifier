@@ -1286,7 +1286,10 @@
   // =========================================================================
 
   function exportDataToExcel(type) {
-    if (appState.processedRecords.length === 0) return;
+    if (appState.processedRecords.length === 0) {
+      alert("No verified records found to export. Please load your list and start processing first!");
+      return;
+    }
 
     let subset = [];
     let filename = 'furniture_leads_audit';
