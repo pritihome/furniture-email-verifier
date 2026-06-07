@@ -936,8 +936,9 @@
           }
         }
       }
-    } else {
-      if (isPersonal && (hasPositiveInMailbox || searchValidated || !appSettings.rejectPersonal)) {
+    }
+  } else {
+    if (isPersonal && (hasPositiveInMailbox || searchValidated || !appSettings.rejectPersonal)) {
         details.push('No website (Personal Provider)');
       } else {
         score -= 30;
@@ -1456,7 +1457,8 @@
       ['julie@furniturevillage.co.uk', 'Julie Village', 'Furniture Village', 'furniturevillage.co.uk', 'United Kingdom'],
       ['getawayfurniture@aol.com', 'Getaway Furniture', 'Getaway Furniture Store', '', 'United States'],
       ['plattefurniture@gmail.com', 'Platte Furniture', 'Platte Furniture Store', '', 'United States'],
-      ['flippinfurniture4you@gmail.com', 'Flippin Furniture', 'Flippin Furniture Fashions', '', 'United States']
+      ['flippinfurniture4you@gmail.com', 'Flippin Furniture', 'Flippin Furniture Fashions', '', 'United States'],
+      ['christiansenfurniture@gmail.com', 'Christiansen Furniture', 'Christiansen Furniture Store', '', 'United States']
     ];
 
     processRawRows(demoRows);
@@ -1605,28 +1607,39 @@
 
   // Application initialization entry
   function init() {
-    loadSettings();
-    bindEvents();
-    syncSettingsToUI();
-    updateDashboard();
-    
-    // Add testing cue directly to Upload container
-    const zone = document.getElementById('drop-zone');
-    const demoLnk = document.createElement('p');
-    demoLnk.style.fontSize = '0.75rem';
-    demoLnk.style.color = 'var(--info)';
-    demoLnk.style.marginTop = '1rem';
-    demoLnk.style.textDecoration = 'underline';
-    demoLnk.innerHTML = 'Or click here to load 15 demo emails (with Indian, competitor, and global buyers) to run engine validation.';
-    demoLnk.style.cursor = 'pointer';
-    demoLnk.addEventListener('click', (e) => {
-      e.stopPropagation(); // prevent triggering parent file picker
-      setupDemoData();
-    });
-    zone.appendChild(demoLnk);
+    try {
+      loadSettings();
+      bindEvents();
+      syncSettingsToUI();
+      updateDashboard();
+      
+      // Add testing cue directly to Upload container
+      const zone = document.getElementById('drop-zone');
+      if (zone) {
+        const demoLnk = document.createElement('p');
+        demoLnk.style.fontSize = '0.75rem';
+        demoLnk.style.color = 'var(--info)';
+        demoLnk.style.marginTop = '1rem';
+        demoLnk.style.textDecoration = 'underline';
+        demoLnk.innerHTML = 'Or click here to load 15 demo emails (with Indian, competitor, and global buyers) to run engine validation.';
+        demoLnk.style.cursor = 'pointer';
+        demoLnk.addEventListener('click', (e) => {
+          e.stopPropagation(); // prevent triggering parent file picker
+          setupDemoData();
+        });
+        zone.appendChild(demoLnk);
+      }
+    } catch (error) {
+      alert("Initialization Error: " + error.message + "\nStack: " + error.stack);
+      console.error("Initialization Error:", error);
+    }
   }
 
-  // Window load binding
-  window.addEventListener('DOMContentLoaded', init);
+  // Window load binding with fallback for already-loaded document
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
 })();
