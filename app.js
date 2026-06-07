@@ -686,23 +686,18 @@
   }
 
   // SerpAPI Search Engine Fallback
-  async function runSerpAPISearch(domain, companyName) {
+  async function runSerpAPISearch(query) {
     if (!appSettings.useSearch || !appSettings.searchKey) {
       return null;
     }
 
     try {
-      const query = encodeURIComponent(`${domain} ${companyName || ''} furniture importer`);
-      const endpoint = `https://serpapi.com/search.json?q=${query}&api_key=${appSettings.searchKey}`;
+      const endpoint = `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${appSettings.searchKey}`;
       
       const res = await fetch(endpoint, { signal: AbortSignal.timeout(6000) });
       if (res.ok) {
         const json = await res.json();
-        if (json.organic_results && json.organic_results.length > 0) {
-          // Combine top 3 result snippets
-          const snippets = json.organic_results.slice(0, 3).map(r => r.snippet).join(' ');
-          return snippets;
-        }
+        return json;
       }
     } catch (e) {
       console.error('SerpAPI connection failed:', e);
@@ -771,8 +766,66 @@
 
     // Check personal email providers
     let isPersonal = PERSONAL_DOMAINS.includes(domain);
-    if (isPersonal && appSettings.rejectPersonal) {
-      rejectReason = 'Rejected because personal email domain is blocked';
+    let hasPositiveInMailbox = false;
+    let searchValidated = false;
+    let searchReason = '';
+
+    if (isPersonal) {
+      const mailboxLower = mailbox.toLowerCase();
+      const positiveSubstrings = [
+        'furniture', 'furnish', 'decor', 'living', 'design', 'interiors', 'sofa', 'chair', 
+        'table', 'wood', 'concept', 'home', 'style', 'studio', 'collection', 'casa', 'loft',
+        'garden', 'outdoor', 'teak', 'bed', 'cabinet', 'kitchen', 'importer', 'imports',
+        'wholesale', 'distributor', 'retailer', 'sourcing',
+        'meubel', 'moebel', 'möbel', 'meuble', 'mobilier', 'mobili', 'mueble', 'einricht', 
+        'inricht', 'interieur', 'diseno', 'diseño', 'wohn', 'haus', 'ambient', 'deco'
+      ];
+      hasPositiveInMailbox = POSITIVE_KEYWORDS.some(kw => mailboxLower.includes(kw)) || positiveSubstrings.some(sub => mailboxLower.includes(sub));
+      
+      if (appSettings.useSearch && appSettings.searchKey) {
+        logConsole(`[Worker ${workerId}] Personal domain detected. Searching Google/Facebook/LinkedIn for email: ${email}`, 'sys');
+        const searchResult = await runSerpAPISearch(`"${email}"`);
+        if (searchResult && searchResult.organic_results && searchResult.organic_results.length > 0) {
+          const combinedText = searchResult.organic_results.slice(0, 4)
+            .map(r => `${r.title} ${r.snippet} ${r.link}`)
+            .join(' ').toLowerCase();
+          
+          const hasSocialLink = combinedText.includes('facebook.com') || 
+                                 combinedText.includes('linkedin.com') || 
+                                 combinedText.includes('instagram.com') ||
+                                 combinedText.includes('pinterest.com');
+          const hasFurnitureKeywords = POSITIVE_KEYWORDS.some(kw => combinedText.includes(kw));
+          
+          if (hasFurnitureKeywords || hasSocialLink) {
+            searchValidated = true;
+            searchReason = `Found on ${hasSocialLink ? 'Facebook/LinkedIn/Social' : 'Google'} associated with furniture`;
+            logConsole(`[Worker ${workerId}] SerpAPI found social/business results for ${email}: ${searchReason}`, 'ok');
+          }
+        }
+        
+        // Fallback to name search if exact email query returned nothing
+        if (!searchValidated) {
+          logConsole(`[Worker ${workerId}] Email search returned no results. Searching for business name: "${mailbox} furniture"`, 'sys');
+          const searchResultName = await runSerpAPISearch(`"${mailbox}" furniture`);
+          if (searchResultName && searchResultName.organic_results && searchResultName.organic_results.length > 0) {
+            const combinedText = searchResultName.organic_results.slice(0, 4)
+              .map(r => `${r.title} ${r.snippet} ${r.link}`)
+              .join(' ').toLowerCase();
+            const hasFurnitureKeywords = POSITIVE_KEYWORDS.some(kw => combinedText.includes(kw));
+            if (hasFurnitureKeywords) {
+              searchValidated = true;
+              searchReason = `Found business "${mailbox}" on Google/Social associated with furniture`;
+              logConsole(`[Worker ${workerId}] SerpAPI found business name results for ${mailbox}: ${searchReason}`, 'ok');
+            }
+          }
+        }
+      }
+
+      if (appSettings.rejectPersonal) {
+        if (!hasPositiveInMailbox && !searchValidated) {
+          rejectReason = 'Rejected because personal email domain is blocked';
+        }
+      }
     }
 
     // DNS MX checks
@@ -815,8 +868,12 @@
     }
 
     if (!isIndian && rejectReason !== 'Rejected because email format is invalid') {
-      logConsole(`[Worker ${workerId}] Scrapping website for domain: ${domain}`, 'info');
-      const scrapeResult = await scrapeWebsiteContent(domain, record.website);
+      if (isPersonal && !record.website) {
+        webStatus = 'Skipped';
+        details.push('Personal Provider (No Website)');
+      } else {
+        logConsole(`[Worker ${workerId}] Scrapping website for domain: ${domain}`, 'info');
+        const scrapeResult = await scrapeWebsiteContent(domain, record.website);
       
       if (scrapeResult.active) {
         score += 15; // +15 website active
@@ -868,7 +925,7 @@
           webStatus = 'CORS Blocked';
           details.push('Website Online (CORS Blocked)');
         } else {
-          if (isPersonal && !appSettings.rejectPersonal) {
+          if (isPersonal && (hasPositiveInMailbox || searchValidated || !appSettings.rejectPersonal)) {
             webStatus = 'Offline';
             details.push('Website Offline (Personal Provider)');
           } else {
@@ -880,7 +937,7 @@
         }
       }
     } else {
-      if (isPersonal && !appSettings.rejectPersonal) {
+      if (isPersonal && (hasPositiveInMailbox || searchValidated || !appSettings.rejectPersonal)) {
         details.push('No website (Personal Provider)');
       } else {
         score -= 30;
@@ -928,18 +985,35 @@
     }
 
     if (isPersonal && appSettings.rejectPersonal) {
-      score -= 50;
+      if (hasPositiveInMailbox || searchValidated) {
+        score -= 15; // Minor deduction for personal email, leaving room to keep if valid
+      } else {
+        score -= 50;
+      }
+    }
+
+    // Add custom score boosts for verified personal email patterns
+    if (isPersonal) {
+      if (hasPositiveInMailbox) {
+        score += 20; // Prefix bypass boost
+        details.push('Personal Email Prefix Bypass');
+      }
+      if (searchValidated) {
+        score += 30; // Search verification boost
+        details.push(searchReason);
+      }
     }
 
     // Perform Search Fallback if settings permit and website was inactive/unclear
     if (!isIndian && !rejectReason && score < 55 && appSettings.useSearch && appSettings.searchKey) {
       logConsole(`[Worker ${workerId}] Borderline score. Running SerpAPI search fallback...`, 'sys');
-      const searchSnippet = await runSerpAPISearch(domain, record.company);
-      if (searchSnippet) {
-        const lowerSnippet = searchSnippet.toLowerCase();
+      const searchQuery = `${domain} ${record.company || ''} furniture importer`;
+      const searchResult = await runSerpAPISearch(searchQuery);
+      if (searchResult && searchResult.organic_results && searchResult.organic_results.length > 0) {
+        const snippets = searchResult.organic_results.slice(0, 3).map(r => r.snippet || '').join(' ').toLowerCase();
         let matchCount = 0;
         POSITIVE_KEYWORDS.forEach(kw => {
-          if (lowerSnippet.includes(kw)) {
+          if (snippets.includes(kw)) {
             matchCount++;
           }
         });
@@ -1379,7 +1453,10 @@
       ['eddie@casualfurnitureworld.com', 'Casual Furniture', 'Casual Furniture World', 'casualfurnitureworld.com', 'United States'],
       ['rogier@oosterbaan-living.nl', 'Oosterbaan', 'Oosterbaan Living', 'oosterbaan-living.nl', 'Netherlands'],
       ['info@cps-interieurs.nl', 'CPS Admin', 'CPS Interieurs', 'cps-interieurs.nl', 'Netherlands'],
-      ['julie@furniturevillage.co.uk', 'Julie Village', 'Furniture Village', 'furniturevillage.co.uk', 'United Kingdom']
+      ['julie@furniturevillage.co.uk', 'Julie Village', 'Furniture Village', 'furniturevillage.co.uk', 'United Kingdom'],
+      ['getawayfurniture@aol.com', 'Getaway Furniture', 'Getaway Furniture Store', '', 'United States'],
+      ['plattefurniture@gmail.com', 'Platte Furniture', 'Platte Furniture Store', '', 'United States'],
+      ['flippinfurniture4you@gmail.com', 'Flippin Furniture', 'Flippin Furniture Fashions', '', 'United States']
     ];
 
     processRawRows(demoRows);
