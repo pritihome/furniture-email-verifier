@@ -58,7 +58,55 @@
     'india', 'indian', 'mumbai', 'delhi', 'chennai', 'bengaluru', 'bangalore', 
     'jodhpur', 'jaipur', 'rajasthan', 'gujarat', 'pune', 'hyderabad', 'kolkata', 
     'noida', 'gurgaon', 'gurugram', 'moradabad', 'saharanpur', 'kerala', 
-    'tamilnadu', 'punjab', 'haryana', 'uttar pradesh', 'maharashtra', 'karnataka'
+    'tamilnadu', 'punjab', 'haryana', 'uttar pradesh', 'maharashtra', 'karnataka',
+    'ahmedabad', 'indore', 'surat', 'vadodara', 'rajkot', 'gandhinagar', 'bhopal',
+    'gwalior', 'jabalpur', 'ujjain', 'kanpur', 'lucknow', 'ghaziabad', 'agra',
+    'meerut', 'bareilly', 'aligarh', 'ludhiana', 'amritsar', 'jalandhar',
+    'patiala', 'bathinda', 'chandigarh', 'panchkula', 'mohali', 'shimla',
+    'dehradun', 'haridwar', 'rishikesh', 'jammu', 'srinagar', 'faridabad',
+    'panipat', 'rohtak', 'hisar', 'sonipat', 'udaipur', 'kota', 'bikaner',
+    'ajmer', 'alwar', 'bhilwara', 'sikar', 'patna', 'gaya', 'muzaffarpur',
+    'bhagalpur', 'ranchi', 'jamshedpur', 'dhanbad', 'bokaro', 'raipur',
+    'bilaspur', 'bhubaneswar', 'cuttack', 'rourkela', 'puri', 'howrah',
+    'darjeeling', 'siliguri', 'asansol', 'durgapur', 'kharagpur', 'guwahati',
+    'shillong', 'imphal', 'kohima', 'aizawl', 'agartala', 'gangtok', 'nagpur',
+    'thane', 'nashik', 'aurangabad', 'solapur', 'amravati', 'navi mumbai',
+    'kolhapur', 'mysore', 'hubli', 'dharwad', 'mangalore', 'belgaum',
+    'gulbarga', 'davangere', 'bellary', 'secunderabad', 'warangal', 'nisamabad',
+    'karimnagar', 'visakhapatnam', 'vijayawada', 'guntur', 'nellore', 'tirupati',
+    'kurnool', 'kakinada', 'coimbatore', 'madurai', 'tiruchirappalli', 'salem',
+    'tiruppur', 'erode', 'vellore', 'tirunelveli', 'kochi', 'cochin', 'calicut',
+    'kozhikode', 'thrissur', 'kollam', 'palakkad', 'alappuzha', 'goa', 'panaji',
+    'margao', 'vasco', 'mapusa', 'pondicherry', 'puducherry', 'port blair',
+    'leh', 'ladakh', 'telangana', 'andhra pradesh', 'madhya pradesh', 'bihar',
+    'west bengal', 'assam', 'odisha', 'uttarakhand', 'jharkhand', 'chhattisgarh',
+    'morbi', 'sardarshahar', 'churu', 'kartarpur', 'nagaur', 'kishangarh'
+  ];
+
+  const INDIAN_NAMES_WORDS = [
+    // Common first names / prefixes
+    'gautam', 'karan', 'wakefit', 'furnishiaa', 'winsome', 'interio', 'amit', 'vijay', 'raj', 'rahul', 
+    'rohit', 'anil', 'sunil', 'sanjay', 'ajay', 'abhishek', 'alok', 'anand', 
+    'arun', 'ashok', 'deepak', 'dinesh', 'hari', 'jitendra', 'kamal', 'kishore', 
+    'lalit', 'manoj', 'naresh', 'naveen', 'pankaj', 'pradeep', 'pramod', 'rajesh', 
+    'ramesh', 'sandeep', 'sanjeev', 'satish', 'suresh', 'tarun', 'umesh', 'vinod', 
+    'vivek', 'vikram', 'varun', 'kartik', 'siddharth', 'aditya', 'anuj', 'gaurav', 
+    'harish', 'himanshu', 'kapil', 'mayank', 'nitin', 'piyush', 'rajiv', 'saurabh', 
+    'tushar', 'vikas', 'vishal', 'priya', 'pooja', 'neha', 'divya', 'rinku', 'sandip',
+    // Common surnames / words
+    'singh', 'kumar', 'sharma', 'verma', 'patel', 'gupta', 'shah', 'mehta', 
+    'joshi', 'rao', 'reddy', 'naidu', 'choudhary', 'chowdhury', 'das', 'sen', 
+    'mukherjee', 'banerjee', 'chatterjee', 'roy', 'bose', 'ghosh', 'mishra', 
+    'tiwari', 'pandey', 'dubey', 'pathak', 'shrivastav', 'prasad', 'yadav', 
+    'lal', 'jain', 'agrawal', 'agarwal', 'goyal', 'bansal', 'mittal', 'kapoor', 
+    'khanna', 'malhotra', 'mehra', 'oberoi', 'shani', 'gill', 'dhillon', 'sidhu', 
+    'sandhu', 'grewal', 'mann', 'chawla', 'sareen', 'sood', 'shrivastava', 
+    'saxena', 'johri', 'bhatia', 'grover', 'kapur', 'nair', 'menon', 'pillai', 
+    'iyer', 'iyengar', 'srinivasan', 'venkat', 'raman', 'krishnan', 'murthy', 
+    'hegde', 'shetty', 'rai', 'pai', 'shenoy', 'mallya', 'kamath', 'prabhu', 
+    'nayak', 'sawant', 'kadam', 'shinde', 'patil', 'deshmukh', 'pawar', 
+    'kulkarni', 'deshpande', 'bhat', 'gowda', 'acharya', 'bharat', 'indya', 
+    'swadeshi', 'desi', 'hindustan', 'bazaar', 'mart'
   ];
 
   const POSITIVE_KEYWORDS = [
@@ -764,11 +812,108 @@
       }
     }
 
+    if (!isIndian) {
+      const matchedName = INDIAN_NAMES_WORDS.find(name => domain.includes(name));
+      if (matchedName) {
+        isIndian = true;
+        rejectReason = `Rejected because domain contains Indian competitor/origin indicator: "${matchedName}"`;
+      }
+    }
+
+    // Check Indian indicators in country column
+    if (!isIndian && record.country) {
+      const lowerCountry = String(record.country).trim().toLowerCase();
+      if (lowerCountry === 'india' || lowerCountry === 'ind' || lowerCountry === 'in') {
+        isIndian = true;
+        rejectReason = 'Rejected because country column indicates Indian origin';
+      }
+    }
+
+    // Check Indian indicators in phone number column
+    if (!isIndian && record.phone) {
+      const cleanPhone = String(record.phone).replace(/[\s\-\(\)\+]/g, '');
+      if (cleanPhone.startsWith('91') || cleanPhone.startsWith('0091')) {
+        isIndian = true;
+        rejectReason = 'Rejected because phone number indicates Indian country code (+91)';
+      } else if (/^[6789]\d{9}$/.test(cleanPhone)) {
+        // A 10-digit mobile number starting with 6-9 under Indian context
+        const lowerMailbox = mailbox.toLowerCase();
+        const lowerCompany = (record.company || '').toLowerCase();
+        const lowerDomain = domain.toLowerCase();
+        const lowerName = (record.name || '').toLowerCase();
+        
+        const hasIndianContext = 
+          INDIAN_CITIES_STATES.some(city => lowerDomain.includes(city) || lowerCompany.includes(city) || lowerName.includes(city)) ||
+          INDIAN_NAMES_WORDS.some(name => lowerMailbox.includes(name) || lowerCompany.includes(name) || lowerName.includes(name));
+          
+        if (hasIndianContext) {
+          isIndian = true;
+          rejectReason = 'Rejected because phone number and context indicate Indian origin';
+        }
+      }
+    }
+
+    // Check Indian indicators in mailbox prefix (e.g. karan@...)
+    if (!isIndian) {
+      const lowerMailbox = mailbox.toLowerCase();
+      const mailboxTokens = lowerMailbox.split(/[^a-z]/);
+      const matchedMailboxName = INDIAN_NAMES_WORDS.find(name => mailboxTokens.includes(name));
+      if (matchedMailboxName) {
+        isIndian = true;
+        rejectReason = `Rejected because email mailbox prefix contains Indian name: "${matchedMailboxName}"`;
+      }
+      
+      if (!isIndian) {
+        const matchedMailboxCity = INDIAN_CITIES_STATES.find(city => mailboxTokens.includes(city));
+        if (matchedMailboxCity) {
+          isIndian = true;
+          rejectReason = `Rejected because email mailbox prefix contains Indian city/state: "${matchedMailboxCity}"`;
+        }
+      }
+    }
+
+    // Check Indian indicators in contact name column
+    if (!isIndian && record.name) {
+      const lowerName = String(record.name).toLowerCase();
+      const nameTokens = lowerName.split(/[^a-z]/);
+      const matchedName = INDIAN_NAMES_WORDS.find(name => nameTokens.includes(name));
+      if (matchedName) {
+        isIndian = true;
+        rejectReason = `Rejected because contact name contains Indian name: "${matchedName}"`;
+      }
+      if (!isIndian) {
+        const matchedCity = INDIAN_CITIES_STATES.find(city => nameTokens.includes(city));
+        if (matchedCity) {
+          isIndian = true;
+          rejectReason = `Rejected because contact name contains Indian location: "${matchedCity}"`;
+        }
+      }
+    }
+
+    // Check Indian indicators in company name column
+    if (!isIndian && record.company) {
+      const lowerCompany = String(record.company).toLowerCase();
+      const companyTokens = lowerCompany.split(/[^a-z]/);
+      const matchedName = INDIAN_NAMES_WORDS.find(name => companyTokens.includes(name));
+      if (matchedName) {
+        isIndian = true;
+        rejectReason = `Rejected because company name contains Indian indicator: "${matchedName}"`;
+      }
+      if (!isIndian) {
+        const matchedCity = INDIAN_CITIES_STATES.find(city => companyTokens.includes(city));
+        if (matchedCity) {
+          isIndian = true;
+          rejectReason = `Rejected because company name contains Indian city/state: "${matchedCity}"`;
+        }
+      }
+    }
+
     // Check personal email providers
     let isPersonal = PERSONAL_DOMAINS.includes(domain);
     let hasPositiveInMailbox = false;
     let searchValidated = false;
     let searchReason = '';
+    let searchChecked = false;
 
     if (isPersonal) {
       const mailboxLower = mailbox.toLowerCase();
@@ -782,47 +927,73 @@
       ];
       hasPositiveInMailbox = POSITIVE_KEYWORDS.some(kw => mailboxLower.includes(kw)) || positiveSubstrings.some(sub => mailboxLower.includes(sub));
       
-      if (appSettings.useSearch && appSettings.searchKey) {
+      if (!isIndian && appSettings.useSearch && appSettings.searchKey) {
         logConsole(`[Worker ${workerId}] Personal domain detected. Searching Google/Facebook/LinkedIn for email: ${email}`, 'sys');
         const searchResult = await runSerpAPISearch(`"${email}"`);
+        let combinedText = '';
         if (searchResult && searchResult.organic_results && searchResult.organic_results.length > 0) {
-          const combinedText = searchResult.organic_results.slice(0, 4)
+          combinedText = searchResult.organic_results.slice(0, 4)
             .map(r => `${r.title} ${r.snippet} ${r.link}`)
             .join(' ').toLowerCase();
-          
-          const hasSocialLink = combinedText.includes('facebook.com') || 
-                                 combinedText.includes('linkedin.com') || 
-                                 combinedText.includes('instagram.com') ||
-                                 combinedText.includes('pinterest.com');
-          const hasFurnitureKeywords = POSITIVE_KEYWORDS.some(kw => combinedText.includes(kw));
-          
-          if (hasFurnitureKeywords || hasSocialLink) {
-            searchValidated = true;
-            searchReason = `Found on ${hasSocialLink ? 'Facebook/LinkedIn/Social' : 'Google'} associated with furniture`;
-            logConsole(`[Worker ${workerId}] SerpAPI found social/business results for ${email}: ${searchReason}`, 'ok');
-          }
         }
         
         // Fallback to name search if exact email query returned nothing
-        if (!searchValidated) {
+        if (!combinedText) {
           logConsole(`[Worker ${workerId}] Email search returned no results. Searching for business name: "${mailbox} furniture"`, 'sys');
           const searchResultName = await runSerpAPISearch(`"${mailbox}" furniture`);
           if (searchResultName && searchResultName.organic_results && searchResultName.organic_results.length > 0) {
-            const combinedText = searchResultName.organic_results.slice(0, 4)
+            combinedText = searchResultName.organic_results.slice(0, 4)
               .map(r => `${r.title} ${r.snippet} ${r.link}`)
               .join(' ').toLowerCase();
+          }
+        }
+        
+        if (combinedText) {
+          // Check for Indian signals in personal search results
+          const matchedCity = INDIAN_CITIES_STATES.find(city => {
+            const regex = new RegExp('\\b' + city + '\\b', 'i');
+            return regex.test(combinedText);
+          });
+          const matchedName = INDIAN_NAMES_WORDS.find(name => {
+            const regex = new RegExp('\\b' + name + '\\b', 'i');
+            return regex.test(combinedText);
+          });
+          const hasGst = combinedText.includes('gstin') || combinedText.includes('gst ') || combinedText.includes(' gst');
+          const hasCin = combinedText.includes('cin number') || combinedText.includes('cin ') || combinedText.includes(' cin');
+          const hasPhone91 = combinedText.includes('+91') || /\b91\s?[6789]\d{9}\b/.test(combinedText);
+          const hasMadeInIndia = combinedText.includes('made in india');
+
+          if (matchedCity || matchedName || hasGst || hasCin || hasPhone91 || hasMadeInIndia) {
+            isIndian = true;
+            let detailIndicator = '';
+            if (matchedCity) detailIndicator = `Indian city/state "${matchedCity}"`;
+            else if (matchedName) detailIndicator = `Indian name/word "${matchedName}"`;
+            else if (hasGst) detailIndicator = 'GST/GSTIN details';
+            else if (hasCin) detailIndicator = 'CIN details';
+            else if (hasPhone91) detailIndicator = 'Indian phone indicator (+91)';
+            else if (hasMadeInIndia) detailIndicator = 'Made in India indicator';
+            
+            rejectReason = `Rejected because search results indicate Indian origin (${detailIndicator})`;
+            logConsole(`[Worker ${workerId}] SerpAPI personal search detected Indian competitor/origin: ${rejectReason}`, 'warn');
+          } else {
+            const hasSocialLink = combinedText.includes('facebook.com') || 
+                                   combinedText.includes('linkedin.com') || 
+                                   combinedText.includes('instagram.com') ||
+                                   combinedText.includes('pinterest.com');
             const hasFurnitureKeywords = POSITIVE_KEYWORDS.some(kw => combinedText.includes(kw));
-            if (hasFurnitureKeywords) {
+            
+            if (hasFurnitureKeywords || hasSocialLink) {
               searchValidated = true;
-              searchReason = `Found business "${mailbox}" on Google/Social associated with furniture`;
-              logConsole(`[Worker ${workerId}] SerpAPI found business name results for ${mailbox}: ${searchReason}`, 'ok');
+              searchReason = `Found on ${hasSocialLink ? 'Facebook/LinkedIn/Social' : 'Google'} associated with furniture`;
+              logConsole(`[Worker ${workerId}] SerpAPI found social/business results for ${email}: ${searchReason}`, 'ok');
             }
           }
         }
+        searchChecked = true;
       }
 
       if (appSettings.rejectPersonal) {
-        if (!hasPositiveInMailbox && !searchValidated) {
+        if (!hasPositiveInMailbox && !searchValidated && !isIndian) {
           rejectReason = 'Rejected because personal email domain is blocked';
         }
       }
@@ -1005,24 +1176,105 @@
       }
     }
 
-    // Perform Search Fallback if settings permit and website was inactive/unclear
-    if (!isIndian && !rejectReason && score < 55 && appSettings.useSearch && appSettings.searchKey) {
-      logConsole(`[Worker ${workerId}] Borderline score. Running SerpAPI search fallback...`, 'sys');
-      const searchQuery = `${domain} ${record.company || ''} furniture importer`;
-      const searchResult = await runSerpAPISearch(searchQuery);
+    // Perform Search Fallback if settings permit
+    const isWebsiteOfflineOrSkipped = (webStatus === 'Offline' || webStatus === 'CORS Blocked' || webStatus === 'Skipped');
+    const isBorderlineScore = (score < 55 && !rejectReason);
+
+    if (!isIndian && !searchChecked && appSettings.useSearch && appSettings.searchKey && (isWebsiteOfflineOrSkipped || isBorderlineScore)) {
+      logConsole(`[Worker ${workerId}] Running fallback/verification SerpAPI search for: ${isPersonal ? email : domain}`, 'sys');
+      
+      let searchQuery = isPersonal ? `"${email}"` : `"${domain}"`;
+      let searchResult = await runSerpAPISearch(searchQuery);
+      
+      let combinedSnippet = '';
       if (searchResult && searchResult.organic_results && searchResult.organic_results.length > 0) {
-        const snippets = searchResult.organic_results.slice(0, 3).map(r => r.snippet || '').join(' ').toLowerCase();
-        let matchCount = 0;
-        POSITIVE_KEYWORDS.forEach(kw => {
-          if (snippets.includes(kw)) {
-            matchCount++;
+        combinedSnippet = searchResult.organic_results.slice(0, 4)
+          .map(r => `${r.title} ${r.snippet} ${r.link}`)
+          .join(' ').toLowerCase();
+      }
+      
+      // Secondary fallback search if first query yielded nothing
+      if (!combinedSnippet) {
+        if (isPersonal && mailbox) {
+          logConsole(`[Worker ${workerId}] Searching for business name fallback: "${mailbox} furniture"`, 'sys');
+          const searchResultName = await runSerpAPISearch(`"${mailbox}" furniture`);
+          if (searchResultName && searchResultName.organic_results && searchResultName.organic_results.length > 0) {
+            combinedSnippet = searchResultName.organic_results.slice(0, 4)
+              .map(r => `${r.title} ${r.snippet} ${r.link}`)
+              .join(' ').toLowerCase();
           }
-        });
-        if (matchCount > 0) {
-          score += 20;
-          details.push(`Search match fallback (+20)`);
+        } else if (!isPersonal) {
+          logConsole(`[Worker ${workerId}] Searching for company fallback: "${domain} ${record.company || ''} furniture"`, 'sys');
+          const broaderQuery = `${domain} ${record.company || ''} furniture`;
+          const searchResultBroad = await runSerpAPISearch(broaderQuery);
+          if (searchResultBroad && searchResultBroad.organic_results && searchResultBroad.organic_results.length > 0) {
+            combinedSnippet = searchResultBroad.organic_results.slice(0, 4)
+              .map(r => `${r.title} ${r.snippet} ${r.link}`)
+              .join(' ').toLowerCase();
+          }
         }
       }
+      
+      if (combinedSnippet) {
+        // Check for Indian signals in search snippets
+        const matchedCity = INDIAN_CITIES_STATES.find(city => {
+          const regex = new RegExp('\\b' + city + '\\b', 'i');
+          return regex.test(combinedSnippet);
+        });
+        
+        const matchedName = INDIAN_NAMES_WORDS.find(name => {
+          const regex = new RegExp('\\b' + name + '\\b', 'i');
+          return regex.test(combinedSnippet);
+        });
+        
+        const hasGst = combinedSnippet.includes('gstin') || combinedSnippet.includes('gst ') || combinedSnippet.includes(' gst');
+        const hasCin = combinedSnippet.includes('cin number') || combinedSnippet.includes('cin ') || combinedSnippet.includes(' cin');
+        const hasPhone91 = combinedSnippet.includes('+91') || /\b91\s?[6789]\d{9}\b/.test(combinedSnippet);
+        const hasMadeInIndia = combinedSnippet.includes('made in india');
+        
+        if (matchedCity || matchedName || hasGst || hasCin || hasPhone91 || hasMadeInIndia) {
+          isIndian = true;
+          let detailIndicator = '';
+          if (matchedCity) detailIndicator = `Indian city/state "${matchedCity}"`;
+          else if (matchedName) detailIndicator = `Indian name/word "${matchedName}"`;
+          else if (hasGst) detailIndicator = 'GST/GSTIN details';
+          else if (hasCin) detailIndicator = 'CIN details';
+          else if (hasPhone91) detailIndicator = 'Indian phone indicator (+91)';
+          else if (hasMadeInIndia) detailIndicator = 'Made in India indicator';
+          
+          rejectReason = `Rejected because search results indicate Indian origin (${detailIndicator})`;
+          logConsole(`[Worker ${workerId}] SerpAPI search detected Indian competitor/origin: ${rejectReason}`, 'warn');
+        } else {
+          // Apply original search validation adjustments if not Indian
+          if (isPersonal) {
+            const hasSocialLink = combinedSnippet.includes('facebook.com') || 
+                                   combinedSnippet.includes('linkedin.com') || 
+                                   combinedSnippet.includes('instagram.com') ||
+                                   combinedSnippet.includes('pinterest.com');
+            const hasFurnitureKeywords = POSITIVE_KEYWORDS.some(kw => combinedSnippet.includes(kw));
+            
+            if ((hasFurnitureKeywords || hasSocialLink) && !searchValidated) {
+              searchValidated = true;
+              searchReason = `Found on ${hasSocialLink ? 'Facebook/LinkedIn/Social' : 'Google'} associated with furniture`;
+              score += 30; // Search verification boost
+              details.push(searchReason);
+              logConsole(`[Worker ${workerId}] SerpAPI found social/business results for ${email}: ${searchReason}`, 'ok');
+            }
+          } else if (isBorderlineScore) {
+            let matchCount = 0;
+            POSITIVE_KEYWORDS.forEach(kw => {
+              if (combinedSnippet.includes(kw)) {
+                matchCount++;
+              }
+            });
+            if (matchCount > 0) {
+              score += 20;
+              details.push(`Search match fallback (+20)`);
+            }
+          }
+        }
+      }
+      searchChecked = true;
     }
 
     // Perform AI Verification Layer if settings permit and domain not already rejected
@@ -1426,6 +1678,12 @@
     // Sample test dataset containing various categories
     const demoRows = [
       ['Email', 'Name', 'Company', 'Website', 'Country'],
+      ['info@gautamfurniture.com', 'Gautam Buyer', 'Gautam Furniture', 'gautamfurniture.com', 'India'],
+      ['info@winsomefurniture.com', 'Winsome Sourcing', 'Winsome Furniture', 'winsomefurniture.com', ''],
+      ['partner@wakefit.co', 'Wakefit Partner', 'Wakefit', 'wakefit.co', 'India'],
+      ['karan@regaltradehome.com', 'Karan', 'Regal Trade Home', 'regaltradehome.com', ''],
+      ['sales@sunriseinterio.com', 'Sunrise Sales', 'Sunrise Interio', 'sunriseinterio.com', 'India'],
+      ['contact@furnishiaa.com', 'Furnishiaa Contact', 'Furnishiaa', 'furnishiaa.com', ''],
       ['sourcing@restorationhardware.com', 'Rh Buyer', 'RH Sourcing', 'rh.com', 'United States'],
       ['buying@boconcept.dk', 'Bo Sourcing', 'BoConcept', 'boconcept.com', 'Denmark'],
       ['info@jaipurfurniture.in', 'Competitor', 'Jaipur Furnitures', 'jaipurfurniture.in', 'India'],
