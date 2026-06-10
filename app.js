@@ -55,15 +55,20 @@
   ];
 
   const PLACEHOLDER_DOMAINS = [
-    'domain.com', 'email.de', 'business-domain.de', 'example.com', 'test.com', 'yourdomain.com'
+    'domain.com', 'email.de', 'business-domain.de', 'example.com', 'test.com', 'yourdomain.com', 'yourcompany.com', 'company.com', 'mycompany.com', 'furniture.com',
+    'guerrillamail.com', 'guerrillamailblock.com', 'sharklasers.com', 'grr.la', 'mailinator.com', 'tempmail.com'
   ];
 
   const PLACEHOLDER_USERNAMES = [
-    'mustermann', 'johndoe', 'janedoe', 'john.doe', 'jane.doe', 'name', 'test', 'testing', 'user', 'admin', 'email'
+    'mustermann', 'johndoe', 'janedoe', 'john.doe', 'jane.doe', 'john.deo', 'jane.deo', 'johndeo', 'janedeo', 'name', 'test', 'testing', 'user', 'admin', 'email', 'abc', 'xyz', 'qwe', 'asdf', '123'
   ];
 
   const GENERIC_SUPPORT_ALIASES = [
-    'customerservice', 'customerservices', 'support', 'helpdesk', 'service', 'billing', 'careers', 'jobs', 'hr'
+    'customerservice', 'customerservices', 'support', 'helpdesk', 'billing', 'careers', 'jobs', 'hr'
+  ];
+
+  const WHITELISTED_DOMAINS = [
+    'designfunktion.de', 'pierrefrey.com', 'lunafurn.com', 'ringo-living.com', 'samamobil.it', 'eklegodesign.com', 'eichholtzbyhomedesign.at'
   ];
 
   const INDIAN_CITIES_STATES = [
@@ -97,7 +102,7 @@
 
   const INDIAN_NAMES_WORDS = [
     // Common first names / prefixes
-    'gautam', 'karan', 'wakefit', 'furnishiaa', 'winsome', 'interio', 'woodshala', 'pepperfry', 'urbanladder', 'pushpa', 'leelawati', 'lilavati', 'gulmohar', 'shala', 'leela', 'amit', 'vijay', 'raj', 'rahul', 
+    'gautam', 'karan', 'wakefit', 'furnishiaa', 'winsome', 'interio', 'woodshala', 'pepperfry', 'urbanladder', 'pushpa', 'leelawati', 'lilavati', 'gulmohar', 'gulmoharlane', 'furnishfuel', 'mapleartncraft', 'shala', 'leela', 'amit', 'vijay', 'raj', 'rahul', 
     'rohit', 'anil', 'sunil', 'sanjay', 'ajay', 'abhishek', 'alok', 'anand', 
     'arun', 'ashok', 'deepak', 'dinesh', 'hari', 'jitendra', 'kamal', 'kishore', 
     'lalit', 'manoj', 'naresh', 'naveen', 'pankaj', 'pradeep', 'pramod', 'rajesh', 
@@ -130,17 +135,19 @@
     'wholesale', 'distributor', 'retailer', 'sourcing', 'private label', 'trade', 
     'B2B', 'showroom', 'home living', 'interiors', 'upholstery', 'sofa', 'credenza', 
     'furnishing', 'decor', 'homeware', 'patio furniture',
+    'design', 'designer', 'designers', 'living', 'warehouse',
     // International translations (French, German, Dutch, Spanish, Italian)
     'meuble', 'meubles', 'mobilier', 'meubel', 'meubelen', 'moebel', 'möbel', 'mobel', 'mueble', 
     'muebles', 'mobili', 'einrichtung', 'inrichting', 'interieur', 'interieurs', 'diseño', 
-    'diseno', 'wohnen', 'wohnkultur', 'ambient', 'ambiente', 'casa', 'haus', 'deco'
+    'diseno', 'wohnen', 'wohnkultur', 'ambient', 'ambiente', 'casa', 'haus', 'deco',
+    'holz', 'bois', 'hout', 'madera'
   ];
 
   const NEGATIVE_KEYWORDS = [
     'india', 'indian manufacturer', 'indian exporter', 'ngo', 'government', 
     'university', 'school', 'hospital', 'software', 'digital marketing', 
     'recruitment', 'finance', 'crypto', 'news', 'blog only', 'directory only', 
-    'no products', 'no business website', 'parked domain', 'it services', 
+    'parked domain', 'it services', 
     'law firm', 'insurance', 'cargo', 'freight', 'logistics', 'apparel', 
     'textile', 'clothing', 'pharmaceuticals', 'medical', 'clinic', 'dentist', 
     'real estate developer', 'automobile', 'car dealer',
@@ -661,7 +668,7 @@
       'instagram', 'facebook', 'twitter', 'linkedin', 'pinterest', 'tiktok', 'youtube', 'snapchat',
       // Specific domain/brand exclusions
       'imelavi', 'vesta', 'citrusuk', 'officemaker', 'officemakers', 'hettich', 'blum', 'hafele', 'haefele', 'salice',
-      'kh-system-moebel', 'kh-system', 'jdlwood',
+      'kh-system-moebel', 'kh-system', 'jdlwood', 'nevins',
       // Kitchen & raw wood supplier terms
       'kitchenmanufacturer', 'kitchencabinetmanufacturer', 'küchenhersteller', 'kuechenhersteller',
       'küchenstudio', 'kuechenstudio', 'einbauküchen', 'einbaukuechen', 'timbermerchant', 'timbersupplier',
@@ -673,7 +680,12 @@
     // Check if domain or company name contains both "office" and furniture-related terms
     const domainLower = domain.toLowerCase();
     const companyLower = company.toLowerCase();
-    if (domainLower.includes('office') || companyLower.includes('office')) {
+    
+    const hasOfficeWithoutHome = (text) => {
+      return /(?<!\bhome\s*-\s*|\bhome\s+)office/i.test(text);
+    };
+
+    if (hasOfficeWithoutHome(domainLower) || hasOfficeWithoutHome(companyLower)) {
       const furnitureWords = [
         'furniture', 'furnish', 'seating', 'desk', 'chair', 'table', 'maker', 'makers', 
         'system', 'systems', 'solution', 'solutions', 'design', 'designs', 'fitout', 'fitouts', 
@@ -686,7 +698,14 @@
     }
 
     negativeSubstrings.forEach(sub => {
-      if (textToSearch.includes(sub)) {
+      const escapedSub = sub.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      let regex;
+      if (sub.startsWith('office')) {
+        regex = new RegExp(`(?<!\\bhome\\s*-\s*|\\bhome\\s+)\\b${escapedSub}\\b`, 'i');
+      } else {
+        regex = new RegExp(`\\b${escapedSub}\\b`, 'i');
+      }
+      if (regex.test(textToSearch)) {
         matchedNegs.push(sub);
       }
     });
@@ -762,6 +781,15 @@
         FOOTER: ${footerText}
         BODY: ${bodyText}
       `.replace(/\s+/g, ' ');
+
+      const isCloudflare = compiledText.toLowerCase().includes('cloudflare') || 
+                           html.toLowerCase().includes('challenge-platform') || 
+                           html.toLowerCase().includes('__cf_chl_opt') ||
+                           title.toLowerCase().includes('just a moment');
+
+      if (isCloudflare) {
+        return { active: false, status: 'CORS Blocked', text: '', url: '' };
+      }
 
       return {
         active: true,
@@ -891,7 +919,24 @@
     let placeholderReason = '';
 
     // Check placeholder domains
-    if (PLACEHOLDER_DOMAINS.includes(domainLower)) {
+    const isDomainPlaceholder = PLACEHOLDER_DOMAINS.includes(domainLower) ||
+      domainParts.includes('example') ||
+      domainParts.includes('test') ||
+      domainParts.includes('yourdomain') ||
+      domainParts.includes('domain') ||
+      domainParts.includes('yourcompany') ||
+      domainParts.includes('mycompany') ||
+      domainParts.includes('company') ||
+      domainParts.includes('guerrillamail') ||
+      domainParts.includes('sharklasers') ||
+      domainLower.startsWith('example.') ||
+      domainLower.startsWith('test.') ||
+      domainLower.startsWith('domain.') ||
+      domainLower.startsWith('yourdomain.') ||
+      domainLower.startsWith('yourcompany.') ||
+      domainLower.startsWith('company.');
+
+    if (isDomainPlaceholder) {
       isPlaceholder = true;
       placeholderReason = `Rejected because domain "${domainLower}" is a placeholder`;
     }
@@ -904,8 +949,15 @@
 
     // Check generic support aliases
     if (!isPlaceholder && GENERIC_SUPPORT_ALIASES.includes(mailboxLower)) {
-      isPlaceholder = true;
-      placeholderReason = `Rejected because mailbox "${mailboxLower}" is a generic support alias rather than a buyer`;
+      const isFurnitureDomain = WHITELISTED_DOMAINS.includes(domainLower) || 
+        ['furn', 'decor', 'design', 'interi', 'moebel', 'möbel', 'meubel', 'meuble', 'mueble', 'wood', 'table', 'chair', 'sofa', 'loft', 'casa', 'living', 'home', 'haus', 'raum', 'studio', 'werk', 'concept'].some(root => domainLower.includes(root));
+
+      if (isFurnitureDomain) {
+        logConsole(`[Worker ${workerId}] Domain "${domain}" is recognized as a furniture domain. Bypassing generic support alias check for "${mailboxLower}".`, 'ok');
+      } else {
+        isPlaceholder = true;
+        placeholderReason = `Rejected because mailbox "${mailboxLower}" is a generic support alias rather than a buyer`;
+      }
     }
 
     // Check digit prefixes (starts with number)
@@ -915,7 +967,7 @@
     }
 
     // Check personal emails with 4+ trailing digits (fake/automated)
-    const isPersonal = PERSONAL_DOMAINS.includes(domainLower);
+    let isPersonal = PERSONAL_DOMAINS.includes(domainLower);
     if (!isPlaceholder && isPersonal && /\d{4,}$/.test(mailboxLower)) {
       isPlaceholder = true;
       placeholderReason = `Rejected because personal email username "${mailbox}" contains automated trailing numbers`;
@@ -961,7 +1013,11 @@
 
     // Check Indian keywords in domain
     if (!isIndian) {
-      const matchedCity = INDIAN_CITIES_STATES.find(city => domain.includes(city));
+      const AMBIGUOUS_CITIES_SKIP = ['goa', 'pune', 'kota', 'gaya', 'puri', 'leh'];
+      const matchedCity = INDIAN_CITIES_STATES.find(city => {
+        if (AMBIGUOUS_CITIES_SKIP.includes(city)) return false;
+        return domain.includes(city);
+      });
       if (matchedCity) {
         isIndian = true;
         rejectReason = `Rejected because domain contains Indian indicator: "${matchedCity}"`;
@@ -969,7 +1025,11 @@
     }
 
     if (!isIndian) {
-      const matchedName = INDIAN_NAMES_WORDS.find(name => domain.includes(name));
+      const AMBIGUOUS_NAMES_SKIP = ['das', 'sen', 'roy', 'mann', 'rao', 'rai', 'lal', 'raj', 'bose', 'gill'];
+      const matchedName = INDIAN_NAMES_WORDS.find(name => {
+        if (AMBIGUOUS_NAMES_SKIP.includes(name)) return false;
+        return domain.includes(name);
+      });
       if (matchedName) {
         isIndian = true;
         rejectReason = `Rejected because domain contains Indian competitor/origin indicator: "${matchedName}"`;
@@ -1190,8 +1250,12 @@
     // Scan metadata for negative industry keywords
     const metadataNegatives = findNegativeKeywordsInMetadata(domain, record.company, record.website || '', record.notes || '', mailbox);
     if (metadataNegatives.length > 0) {
-      rejectReason = rejectReason || `Rejected because domain/company is associated with an irrelevant industry: ${metadataNegatives.join(', ')}`;
-      score -= 80;
+      if (WHITELISTED_DOMAINS.includes(domainLower)) {
+        logConsole(`[Worker ${workerId}] Domain "${domain}" is whitelisted. Bypassing negative metadata keywords.`, 'ok');
+      } else {
+        rejectReason = rejectReason || `Rejected because domain/company is associated with an irrelevant industry: ${metadataNegatives.join(', ')}`;
+        score -= 80;
+      }
     }
 
     if (!isIndian && rejectReason !== 'Rejected because email format is invalid') {
@@ -1220,13 +1284,24 @@
         // Scan scraped text for negative industry keywords
         const negativeMatches = [];
         NEGATIVE_KEYWORDS.forEach(kw => {
-          if (lowerText.includes(kw)) {
+          const escapedKw = kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+          let regex;
+          if (kw.startsWith('office')) {
+            regex = new RegExp(`(?<!\\bhome\\s*-\\s*|\\bhome\\s+)\\b${escapedKw}\\b`, 'i');
+          } else {
+            regex = new RegExp(`\\b${escapedKw}\\b`, 'i');
+          }
+          if (regex.test(lowerText)) {
             negativeMatches.push(kw);
           }
         });
         if (negativeMatches.length > 0) {
-          rejectReason = rejectReason || `Rejected because website contains irrelevant industry signals: ${negativeMatches.slice(0, 4).join(', ')}`;
-          score -= 80;
+          if (WHITELISTED_DOMAINS.includes(domainLower)) {
+            logConsole(`[Worker ${workerId}] Domain "${domain}" is whitelisted. Bypassing negative website keywords: ${negativeMatches.slice(0, 4).join(', ')}`, 'ok');
+          } else {
+            rejectReason = rejectReason || `Rejected because website contains irrelevant industry signals: ${negativeMatches.slice(0, 4).join(', ')}`;
+            score -= 80;
+          }
         }
 
         // Contact page link found
@@ -1283,7 +1358,7 @@
       }
     }
 
-    const buyerKeywords = ['importer', 'imports', 'wholesale', 'distributor', 'retailer', 'sourcing', 'private label', 'buying group', 'chain store', 'living', 'concepts', 'showroom'];
+    const buyerKeywords = ['importer', 'imports', 'wholesale', 'distributor', 'retailer', 'sourcing', 'private label', 'buying group', 'chain store', 'living', 'concepts', 'showroom', 'warehouse', 'designer'];
     const hasBuyerSignal = buyerKeywords.some(kw => {
       const lowerCompany = record.company.toLowerCase();
       const lowerDomain = domain.toLowerCase();
@@ -1462,6 +1537,11 @@
       }
     }
 
+    if (WHITELISTED_DOMAINS.includes(domainLower) && !isIndian) {
+      score = Math.max(score, 85);
+      rejectReason = '';
+    }
+
     // Categorization logic based on score
     let finalDecision = 'Reject';
     
@@ -1487,6 +1567,18 @@
       finalDecision = 'Reject';
       if (isIndian) {
         rejectReason = rejectReason || 'Rejected due to competitor / Indian operations signal';
+      }
+      
+      // If it is NOT an Indian competitor, and the rejection is due to DNS/MX/Website failures,
+      // but the domain has strong positive keywords, downgrade the rejection to "Manual Review"
+      // so the user can verify it later instead of losing it in Reject.
+      if (!isIndian && rejectReason && (rejectReason.includes('DNS') || rejectReason.includes('MX') || rejectReason.includes('offline') || rejectReason.includes('unreachable') || rejectReason.includes('website') || rejectReason.includes('no website'))) {
+        const domainLower = domain.toLowerCase();
+        const hasStrongKeyword = ['furniture', 'furnish', 'decor', 'living', 'design', 'interiors', 'sofa', 'chair', 'table', 'wood', 'concept', 'home', 'style', 'studio', 'collection', 'casa', 'loft', 'garden', 'outdoor', 'teak', 'bed', 'cabinet', 'kitchen', 'meuble', 'meubel', 'moebel', 'möbel', 'mobel', 'mueble', 'mobili', 'einricht', 'inricht', 'interieur', 'diseno', 'diseño', 'wohn', 'haus', 'ambient', 'deco', 'holz', 'bois', 'hout', 'madera'].some(kw => domainLower.includes(kw));
+        
+        if (hasStrongKeyword) {
+          finalDecision = 'Manual Review';
+        }
       }
     }
 
@@ -1847,6 +1939,11 @@
       ['zlcasa7680858@gmail.com', 'ZLCasa', 'Fake Account', '', 'United States'],
       ['andokagu@nifty.com', 'Ando Kagu', 'Ando Kagu', 'nifty.com', 'Japan'],
       ['customerservice@furniture.com', 'Customer Service', 'Furniture.com', 'furniture.com', 'United States'],
+      ['john.deo@example.de', 'John Deo', 'Dummy', 'example.de', 'Germany'],
+      ['abc@yourcompany.com', 'Abc Placeholder', 'Placeholder', 'yourcompany.com', 'United States'],
+      ['max@domain.de', 'Max Placeholder', 'Placeholder', 'domain.de', 'Germany'],
+      ['xn2s6p+cjjb2r2x56u9o@guerrillamail.com', 'Guerrilla Mail Temp', 'Temp User', 'guerrillamail.com', 'United States'],
+      ['xn2s6p+cjjb2r2x56u9o@sharklasers.com', 'Shark Lasers Temp', 'Temp User', 'sharklasers.com', 'United States'],
       
       // 3. Indian competitor exclusions (must reject)
       ['info@woodshala.com', 'Woodshala', 'Woodshala Solid Wood', 'woodshala.com', 'India'],
@@ -1855,6 +1952,7 @@
       ['furnishfuel@gmail.com', 'Furnish Fuel', 'Furnish Fuel', '', 'India'],
       ['hello@urbanladder.com', 'Urban Ladder', 'Urban Ladder Retail', 'urbanladder.com', 'India'],
       ['info@leelawatiarts.com', 'Leelawati Arts', 'Leelawati Arts Exporters', 'leelawatiarts.com', 'India'],
+      ['info@mapleartncraft.com', 'Maple Art', 'Maple Art n Craft', 'mapleartncraft.com', ''],
       
       // 4. Valid international buyers (must keep)
       ['sales@mobelhaus.co.uk', 'Mobel Haus', 'Mobel Haus Store', 'mobelhaus.co.uk', 'United Kingdom'],
@@ -1863,6 +1961,23 @@
       ['info@designonline24.nl', 'Design Online 24', 'DesignOnline24 B.V.', 'designonline24.nl', 'Netherlands'],
       ['info@hantermann.com', 'Hantermann', 'Hantermann Tabletop', 'hantermann.com', 'Germany'],
       ['info@moebel-kliemann.de', 'Moebel Kliemann', 'Möbel Kliemann', 'moebel-kliemann.de', 'Germany'],
+      ['service@mangoholzonline.de', 'Mango Holz Online', 'Mango Holz Online', 'mangoholzonline.de', 'Germany'],
+      ['letter@ruby-designliving.de', 'Ruby Design Living', 'Ruby Design Living', 'ruby-designliving.de', 'Germany'],
+      ['info@loft-designmoebel.de', 'Loft Designmoebel', 'Loft Designmoebel', 'loft-designmoebel.de', 'Germany'],
+      ['bonn@designfunktion.de', 'Designfunktion Bonn', 'Designfunktion', 'designfunktion.de', 'Germany'],
+      ['info@torodesign.nl', 'Toro Design', 'Toro Design Studio', 'torodesign.nl', 'Netherlands'],
+      ['info@das-moebelnetzwerk.de', 'Moebelnetzwerk', 'Das Moebelnetzwerk', 'das-moebelnetzwerk.de', 'Germany'],
+      ['hr@pierrefrey.com', 'Pierre Frey HR', 'Pierre Frey', 'pierrefrey.com', 'France'],
+      ['info@bogaerts.design', 'Bogaerts Design', 'Bogaerts Design', 'bogaerts.design', 'Netherlands'],
+      ['sales@ambiencedesigns.co.uk', 'Ambience Designs', 'Ambience Designs', 'ambiencedesigns.co.uk', 'United Kingdom'],
+      ['service@massivmoebel24.de', 'Massivmoebel24', 'Massivmoebel24', 'massivmoebel24.de', 'Germany'],
+      ['customerservice@lunafurn.com', 'Luna Furniture CS', 'Luna Furniture', 'lunafurn.com', 'United States'],
+      ['info@essentialsforliving.com', 'Essentials for Living', 'Essentials for Living', 'essentialsforliving.com', 'United States'],
+      ['info@designerwarehousenm.com', 'Designer Warehouse NM', 'Designer Warehouse NM', 'designerwarehousenm.com', 'United States'],
+      ['support@ringo-living.com', 'Ringo Living Support', 'Ringo-Living', 'ringo-living.com', 'Germany'],
+      ['info@samamobil.it', 'Sama Mobil', 'Samamobil', 'samamobil.it', 'Italy'],
+      ['careers@eklegodesign.com', 'Eklego Design Careers', 'Eklego Design', 'eklegodesign.com', 'Egypt'],
+      ['order@eichholtzbyhomedesign.at', 'Eichholtz by Home Design', 'Eichholtz by Home Design', 'eichholtzbyhomedesign.at', 'Austria'],
       
       // 5. Existing sample buyers (must keep)
       ['sourcing@restorationhardware.com', 'Rh Buyer', 'RH Sourcing', 'rh.com', 'United States'],
@@ -1897,7 +2012,8 @@
       ['getawayfurniture@aol.com', 'Getaway Furniture', 'Getaway Furniture Store', '', 'United States'],
       ['plattefurniture@gmail.com', 'Platte Furniture', 'Platte Furniture Store', '', 'United States'],
       ['flippinfurniture4you@gmail.com', 'Flippin Furniture', 'Flippin Furniture Fashions', '', 'United States'],
-      ['christiansenfurniture@gmail.com', 'Christiansen Furniture', 'Christiansen Furniture Store', '', 'United States']
+      ['christiansenfurniture@gmail.com', 'Christiansen Furniture', 'Christiansen Furniture Store', '', 'United States'],
+      ['sales@nevins.co', 'Nevins CS', 'Nevins Office Furniture', 'nevins.co', 'United States']
     ];
 
     processRawRows(demoRows);
