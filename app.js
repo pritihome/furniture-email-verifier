@@ -45,13 +45,25 @@
     'rediffmail.com', 'aol.com', 'protonmail.com', 'icloud.com', 'ymail.com', 
     'mail.com', 'gmx.com', 'zoho.com', 'fastmail.com', 'hushmail.com',
     'googlemail.com', 'googleemail.com',
-    'imelavi.fr', 'gadz.org', 'centraliens.net',
+    'imelavi.fr', 'gadz.org', 'centraliens.net', 'nifty.com',
     // Common ISP and Cable providers
     'chello.nl', 'comcast.net', 'charter.net', 'cox.net', 'att.net', 'sbcglobal.net', 
     'verizon.net', 'bellsouth.net', 'optonline.net', 'earthlink.net', 'shaw.ca', 
     'rogers.com', 'sympatico.ca', 'btinternet.com', 'virginmedia.com', 'talktalk.net', 
     't-online.de', 'freenet.de', 'web.de', 'wanadoo.fr', 'orange.fr', 'free.fr', 
     'alice.it', 'libero.it', 'tin.it', 'telenet.be', 'skynet.be', 'xtra.co.nz', 'bigpond.com'
+  ];
+
+  const PLACEHOLDER_DOMAINS = [
+    'domain.com', 'email.de', 'business-domain.de', 'example.com', 'test.com', 'yourdomain.com'
+  ];
+
+  const PLACEHOLDER_USERNAMES = [
+    'mustermann', 'johndoe', 'janedoe', 'john.doe', 'jane.doe', 'name', 'test', 'testing', 'user', 'admin', 'email'
+  ];
+
+  const GENERIC_SUPPORT_ALIASES = [
+    'customerservice', 'customerservices', 'support', 'helpdesk', 'service', 'billing', 'careers', 'jobs', 'hr'
   ];
 
   const INDIAN_CITIES_STATES = [
@@ -85,7 +97,7 @@
 
   const INDIAN_NAMES_WORDS = [
     // Common first names / prefixes
-    'gautam', 'karan', 'wakefit', 'furnishiaa', 'winsome', 'interio', 'amit', 'vijay', 'raj', 'rahul', 
+    'gautam', 'karan', 'wakefit', 'furnishiaa', 'winsome', 'interio', 'woodshala', 'pepperfry', 'urbanladder', 'pushpa', 'leelawati', 'lilavati', 'gulmohar', 'shala', 'leela', 'amit', 'vijay', 'raj', 'rahul', 
     'rohit', 'anil', 'sunil', 'sanjay', 'ajay', 'abhishek', 'alok', 'anand', 
     'arun', 'ashok', 'deepak', 'dinesh', 'hari', 'jitendra', 'kamal', 'kishore', 
     'lalit', 'manoj', 'naresh', 'naveen', 'pankaj', 'pradeep', 'pramod', 'rajesh', 
@@ -119,7 +131,7 @@
     'B2B', 'showroom', 'home living', 'interiors', 'upholstery', 'sofa', 'credenza', 
     'furnishing', 'decor', 'homeware', 'patio furniture',
     // International translations (French, German, Dutch, Spanish, Italian)
-    'meuble', 'meubles', 'mobilier', 'meubel', 'meubelen', 'moebel', 'möbel', 'mueble', 
+    'meuble', 'meubles', 'mobilier', 'meubel', 'meubelen', 'moebel', 'möbel', 'mobel', 'mueble', 
     'muebles', 'mobili', 'einrichtung', 'inrichting', 'interieur', 'interieurs', 'diseño', 
     'diseno', 'wohnen', 'wohnkultur', 'ambient', 'ambiente', 'casa', 'haus', 'deco'
   ];
@@ -132,6 +144,10 @@
     'law firm', 'insurance', 'cargo', 'freight', 'logistics', 'apparel', 
     'textile', 'clothing', 'pharmaceuticals', 'medical', 'clinic', 'dentist', 
     'real estate developer', 'automobile', 'car dealer',
+    // Kitchen manufacturers and wood suppliers (irrelevant sectors)
+    'kitchen manufacturer', 'kitchen cabinet manufacturer', 'küchenhersteller', 'kuechenhersteller',
+    'küchenstudio', 'kuechenstudio', 'einbauküchen', 'einbaukuechen', 'timber merchant', 'timber supplier',
+    'lumber yard', 'lumber supplier', 'sawmill', 'plywood supplier', 'raw wood supplier',
     // Office furniture terms (excluded sector)
     'office furniture', 'office seating', 'office chair', 'office chairs', 'office desk', 
     'office desks', 'workstation', 'workstations', 'desk system', 'desk systems'
@@ -460,56 +476,133 @@
     return re.test(email);
   }
 
-  // DNS-over-HTTPS (DoH) MX Lookup
+  // DNS-over-HTTPS (DoH) MX Lookup with Cloudflare Fallback
   async function resolveMxRecords(domain) {
+    let response;
+    let json;
+    
     try {
-      const response = await fetch(`https://dns.google/resolve?name=${domain}&type=MX`);
-      if (!response.ok) return { valid: false, details: 'DNS Server Error' };
-      const json = await response.json();
-      
-      // Look for MX records inside the DNS response Answers
-      if (json.Answer && json.Answer.length > 0) {
-        const mxList = json.Answer.filter(ans => ans.type === 15);
-        if (mxList.length > 0) {
-          return { valid: true, list: mxList.map(m => m.data).join(', ') };
-        }
+      response = await fetch(`https://dns.google/resolve?name=${domain}&type=MX`);
+      if (response.ok) {
+        json = await response.json();
       }
-      
-      // Check A record fallback if no MX
-      const aResponse = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
-      if (aResponse.ok) {
-        const aJson = await aResponse.json();
-        if (aJson.Answer && aJson.Answer.length > 0) {
-          return { valid: false, details: 'No MX record found but A record exists (domain parked or sub-hosted)' };
-        }
-      }
-      
-      return { valid: false, details: 'No MX or A DNS records resolved' };
     } catch (e) {
-      return { valid: false, details: `DNS handshake failed: ${e.message}` };
+      console.warn(`Google MX DoH failed for ${domain}: ${e.message}. Retrying with Cloudflare DoH...`);
     }
+    
+    // Fallback to Cloudflare if Google DoH failed, returned non-zero status (like ServFail status 2), or no answer
+    if (!json || (json.Status !== 0 && json.Status !== 3)) {
+      try {
+        response = await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=MX`, {
+          headers: { 'Accept': 'application/dns-json' }
+        });
+        if (response.ok) {
+          json = await response.json();
+        }
+      } catch (e) {
+        console.error(`Cloudflare MX DoH fallback failed for ${domain}: ${e.message}`);
+      }
+    }
+    
+    if (json && json.Answer && json.Answer.length > 0) {
+      const mxList = json.Answer.filter(ans => ans.type === 15);
+      if (mxList.length > 0) {
+        return { valid: true, list: mxList.map(m => m.data).join(', ') };
+      }
+    }
+    
+    // Check A record fallback if no MX
+    let aJson;
+    try {
+      response = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
+      if (response.ok) {
+        aJson = await response.json();
+      }
+    } catch (e) {
+      console.warn(`Google A DoH failed for ${domain}: ${e.message}. Retrying with Cloudflare DoH...`);
+    }
+    
+    if (!aJson || (aJson.Status !== 0 && aJson.Status !== 3)) {
+      try {
+        response = await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=A`, {
+          headers: { 'Accept': 'application/dns-json' }
+        });
+        if (response.ok) {
+          aJson = await response.json();
+        }
+      } catch (e) {
+        console.error(`Cloudflare A DoH fallback failed for ${domain}: ${e.message}`);
+      }
+    }
+    
+    if (aJson && aJson.Answer && aJson.Answer.length > 0) {
+      return { valid: false, details: 'No MX record found but A record exists (domain parked or sub-hosted)' };
+    }
+    
+    const statusText = json ? `DNS Status Code ${json.Status}` : 'DNS handshake failed';
+    return { valid: false, details: `No MX or A DNS records resolved (${statusText})` };
   }
 
+  // checkWebsiteDnsA with Cloudflare Fallback
   async function checkWebsiteDnsA(domain) {
+    let response;
+    let json;
+    
     try {
-      const response = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
+      response = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
       if (response.ok) {
-        const json = await response.json();
-        if (json.Answer && json.Answer.length > 0) {
-          return true;
-        }
-      }
-      
-      const wwwResponse = await fetch(`https://dns.google/resolve?name=www.${domain}&type=A`);
-      if (wwwResponse.ok) {
-        const wwwJson = await wwwResponse.json();
-        if (wwwJson.Answer && wwwJson.Answer.length > 0) {
-          return true;
-        }
+        json = await response.json();
       }
     } catch (e) {
-      console.error('DNS A lookup failed:', e);
+      console.warn(`Google A DoH failed for ${domain}: ${e.message}. Retrying with Cloudflare...`);
     }
+    
+    if (!json || (json.Status !== 0 && json.Status !== 3)) {
+      try {
+        response = await fetch(`https://cloudflare-dns.com/dns-query?name=${domain}&type=A`, {
+          headers: { 'Accept': 'application/dns-json' }
+        });
+        if (response.ok) {
+          json = await response.json();
+        }
+      } catch (e) {
+        console.error(`Cloudflare A DoH failed for ${domain}: ${e.message}`);
+      }
+    }
+    
+    if (json && json.Answer && json.Answer.length > 0) {
+      return true;
+    }
+    
+    // Check www subdomain fallback
+    let wwwJson;
+    let wwwResponse;
+    try {
+      wwwResponse = await fetch(`https://dns.google/resolve?name=www.${domain}&type=A`);
+      if (wwwResponse.ok) {
+        wwwJson = await wwwResponse.json();
+      }
+    } catch (e) {
+      console.warn(`Google www A DoH failed for ${domain}: ${e.message}. Retrying...`);
+    }
+    
+    if (!wwwJson || (wwwJson.Status !== 0 && wwwJson.Status !== 3)) {
+      try {
+        wwwResponse = await fetch(`https://cloudflare-dns.com/dns-query?name=www.${domain}&type=A`, {
+          headers: { 'Accept': 'application/dns-json' }
+        });
+        if (wwwResponse.ok) {
+          wwwJson = await wwwResponse.json();
+        }
+      } catch (e) {
+        console.error(`Cloudflare www A DoH failed: ${e.message}`);
+      }
+    }
+    
+    if (wwwJson && wwwJson.Answer && wwwJson.Answer.length > 0) {
+      return true;
+    }
+    
     return false;
   }
 
@@ -568,6 +661,11 @@
       'instagram', 'facebook', 'twitter', 'linkedin', 'pinterest', 'tiktok', 'youtube', 'snapchat',
       // Specific domain/brand exclusions
       'imelavi', 'vesta', 'citrusuk', 'officemaker', 'officemakers', 'hettich', 'blum', 'hafele', 'haefele', 'salice',
+      'kh-system-moebel', 'kh-system', 'jdlwood',
+      // Kitchen & raw wood supplier terms
+      'kitchenmanufacturer', 'kitchencabinetmanufacturer', 'küchenhersteller', 'kuechenhersteller',
+      'küchenstudio', 'kuechenstudio', 'einbauküchen', 'einbaukuechen', 'timbermerchant', 'timbersupplier',
+      'lumberyard', 'lumbersupplier', 'sawmill', 'plywoodsupplier', 'rawwoodsupplier',
       // Office furniture brands & international terms
       'flokk', 'allsteel', 'giroflex', 'offecct', 'kantoor', 'buero', 'büro', 'ufficio', 'oficina'
     ];
@@ -785,6 +883,64 @@
     const tld = domainParts[domainParts.length - 1];
     const companyFromDomain = domainParts[0];
 
+    // 1.1 Placeholder & Generic Exclusions
+    const mailboxLower = mailbox.toLowerCase();
+    const domainLower = domain.toLowerCase();
+
+    let isPlaceholder = false;
+    let placeholderReason = '';
+
+    // Check placeholder domains
+    if (PLACEHOLDER_DOMAINS.includes(domainLower)) {
+      isPlaceholder = true;
+      placeholderReason = `Rejected because domain "${domainLower}" is a placeholder`;
+    }
+
+    // Check placeholder usernames
+    if (!isPlaceholder && PLACEHOLDER_USERNAMES.includes(mailboxLower)) {
+      isPlaceholder = true;
+      placeholderReason = `Rejected because username "${mailboxLower}" is a placeholder`;
+    }
+
+    // Check generic support aliases
+    if (!isPlaceholder && GENERIC_SUPPORT_ALIASES.includes(mailboxLower)) {
+      isPlaceholder = true;
+      placeholderReason = `Rejected because mailbox "${mailboxLower}" is a generic support alias rather than a buyer`;
+    }
+
+    // Check digit prefixes (starts with number)
+    if (!isPlaceholder && /^\d/.test(mailbox)) {
+      isPlaceholder = true;
+      placeholderReason = `Rejected because email mailbox prefix "${mailbox}" starts with a number`;
+    }
+
+    // Check personal emails with 4+ trailing digits (fake/automated)
+    const isPersonal = PERSONAL_DOMAINS.includes(domainLower);
+    if (!isPlaceholder && isPersonal && /\d{4,}$/.test(mailboxLower)) {
+      isPlaceholder = true;
+      placeholderReason = `Rejected because personal email username "${mailbox}" contains automated trailing numbers`;
+    }
+
+    if (isPlaceholder) {
+      return {
+        ...record,
+        cleanedEmail: email,
+        domain: domain,
+        mxStatus: 'Fail',
+        webStatus: 'Offline',
+        country: 'Unknown',
+        category: 'Placeholder / Invalid',
+        score: 0,
+        importerSignal: 'No',
+        indianSignal: 'No',
+        decision: 'Reject',
+        reason: placeholderReason,
+        urlChecked: '',
+        keywords: '',
+        notes: 'Failed placeholder/automated checks'
+      };
+    }
+
     let score = 0;
     let details = [];
     let isIndian = false;
@@ -909,7 +1065,7 @@
     }
 
     // Check personal email providers
-    let isPersonal = PERSONAL_DOMAINS.includes(domain);
+    isPersonal = PERSONAL_DOMAINS.includes(domain);
     let hasPositiveInMailbox = false;
     let searchValidated = false;
     let searchReason = '';
@@ -1678,12 +1834,37 @@
     // Sample test dataset containing various categories
     const demoRows = [
       ['Email', 'Name', 'Company', 'Website', 'Country'],
-      ['info@gautamfurniture.com', 'Gautam Buyer', 'Gautam Furniture', 'gautamfurniture.com', 'India'],
-      ['info@winsomefurniture.com', 'Winsome Sourcing', 'Winsome Furniture', 'winsomefurniture.com', ''],
-      ['partner@wakefit.co', 'Wakefit Partner', 'Wakefit', 'wakefit.co', 'India'],
-      ['karan@regaltradehome.com', 'Karan', 'Regal Trade Home', 'regaltradehome.com', ''],
-      ['sales@sunriseinterio.com', 'Sunrise Sales', 'Sunrise Interio', 'sunriseinterio.com', 'India'],
-      ['contact@furnishiaa.com', 'Furnishiaa Contact', 'Furnishiaa', 'furnishiaa.com', ''],
+      // 1. Kitchen & wood supplier exclusions (must reject)
+      ['sales@kh-system-moebel.de', 'KH System', 'KH System Möbel', 'kh-system-moebel.de', 'Germany'],
+      ['info@jdlwood.com', 'JDL Wood', 'JDL Wood Selling', 'jdlwood.com', 'United States'],
+      
+      // 2. Placeholder & automated email exclusions (must reject)
+      ['mustermann@email.de', 'Max Mustermann', 'Placeholder', 'email.de', 'Germany'],
+      ['johndoe@domain.com', 'John Doe', 'Dummy', 'domain.com', 'United States'],
+      ['name@domain.com', 'Name', 'Dummy', 'domain.com', 'United States'],
+      ['review@business-domain.de', 'Review', 'Placeholder', 'business-domain.de', 'Germany'],
+      ['20beratung@mathes.de', 'Beratung', 'Mathes', 'mathes.de', 'Germany'],
+      ['zlcasa7680858@gmail.com', 'ZLCasa', 'Fake Account', '', 'United States'],
+      ['andokagu@nifty.com', 'Ando Kagu', 'Ando Kagu', 'nifty.com', 'Japan'],
+      ['customerservice@furniture.com', 'Customer Service', 'Furniture.com', 'furniture.com', 'United States'],
+      
+      // 3. Indian competitor exclusions (must reject)
+      ['info@woodshala.com', 'Woodshala', 'Woodshala Solid Wood', 'woodshala.com', 'India'],
+      ['info@pushpaarts.com', 'Pushpa Arts', 'Pushpa Arts Exporters', 'pushpaarts.com', 'India'],
+      ['care@gulmoharlane.com', 'Gulmohar Lane', 'Gulmohar Lane Decor', 'gulmoharlane.com', 'India'],
+      ['furnishfuel@gmail.com', 'Furnish Fuel', 'Furnish Fuel', '', 'India'],
+      ['hello@urbanladder.com', 'Urban Ladder', 'Urban Ladder Retail', 'urbanladder.com', 'India'],
+      ['info@leelawatiarts.com', 'Leelawati Arts', 'Leelawati Arts Exporters', 'leelawatiarts.com', 'India'],
+      
+      // 4. Valid international buyers (must keep)
+      ['sales@mobelhaus.co.uk', 'Mobel Haus', 'Mobel Haus Store', 'mobelhaus.co.uk', 'United Kingdom'],
+      ['info@dashollaendischemoebelhaus.de', 'Das Hollaendische Moebelhaus', 'Das Hollaendische Moebelhaus', 'dashollaendischemoebelhaus.de', 'Germany'],
+      ['info@soulinteriors.hu', 'Soul Interiors', 'Soul Interiors Decor', 'soulinteriors.hu', 'Hungary'],
+      ['info@designonline24.nl', 'Design Online 24', 'DesignOnline24 B.V.', 'designonline24.nl', 'Netherlands'],
+      ['info@hantermann.com', 'Hantermann', 'Hantermann Tabletop', 'hantermann.com', 'Germany'],
+      ['info@moebel-kliemann.de', 'Moebel Kliemann', 'Möbel Kliemann', 'moebel-kliemann.de', 'Germany'],
+      
+      // 5. Existing sample buyers (must keep)
       ['sourcing@restorationhardware.com', 'Rh Buyer', 'RH Sourcing', 'rh.com', 'United States'],
       ['buying@boconcept.dk', 'Bo Sourcing', 'BoConcept', 'boconcept.com', 'Denmark'],
       ['info@jaipurfurniture.in', 'Competitor', 'Jaipur Furnitures', 'jaipurfurniture.in', 'India'],
